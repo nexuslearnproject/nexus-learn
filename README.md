@@ -1,11 +1,12 @@
 # Nexus Learn
 
-A full-stack application with Django backend, Next.js frontend, and PostgreSQL database, all orchestrated with Docker Compose.
+A full-stack application with Django backend, Next.js frontend, Flutter mobile app, and PostgreSQL database, all orchestrated with Docker Compose.
 
 ## Tech Stack
 
 - **Backend**: Django 4.2 + Django REST Framework
 - **Frontend**: Next.js 14 (React 18) with TypeScript
+- **Mobile**: Flutter (Dart) with Provider state management
 - **Database**: PostgreSQL 15
 - **Containerization**: Docker & Docker Compose
 
@@ -45,6 +46,14 @@ A full-stack application with Django backend, Next.js frontend, and PostgreSQL d
    - Django Admin: http://localhost:8000/admin
    - API Health Check: http://localhost:8000/api/health/
 
+7. **Run the mobile app** (optional):
+   ```bash
+   cd mobile
+   flutter pub get
+   flutter run
+   ```
+   See [mobile/README.md](mobile/README.md) for detailed mobile setup instructions.
+
 ## Project Structure
 
 ```
@@ -59,6 +68,14 @@ nexus-learn/
 │   ├── app/            # Next.js app directory
 │   ├── package.json
 │   └── Dockerfile
+├── mobile/              # Flutter mobile app
+│   ├── lib/            # Dart source code
+│   │   ├── models/    # Data models
+│   │   ├── services/  # API service
+│   │   ├── providers/ # State management
+│   │   ├── screens/   # App screens
+│   │   └── widgets/   # Reusable widgets
+│   └── pubspec.yaml   # Flutter dependencies
 ├── docker-compose.yml   # Docker Compose configuration
 ├── .env.example        # Environment variables template
 └── README.md
@@ -137,6 +154,19 @@ The frontend code is also mounted as a volume. Changes will be hot-reloaded auto
 To add new npm packages:
 1. Install them: `docker-compose exec frontend npm install <package-name>`
 2. Or edit `package.json` and rebuild: `docker-compose up --build frontend`
+
+### Mobile Development
+
+The mobile app is developed locally (not in Docker). See [mobile/README.md](mobile/README.md) for setup instructions.
+
+To run the mobile app:
+```bash
+cd mobile
+flutter pub get
+flutter run
+```
+
+The mobile app connects to the Django backend API. Make sure the backend is running before starting the mobile app.
 
 ## Environment Variables
 

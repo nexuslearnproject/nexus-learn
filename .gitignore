@@ -15,6 +15,8 @@ eggs/
 .eggs/
 lib/
 lib64/
+# Allow Flutter lib directory
+!mobile/lib/
 parts/
 sdist/
 var/
@@ -63,4 +65,20 @@ Thumbs.db
 *.pid
 *.seed
 *.pid.lock
+
+# Flutter
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.packages
+mobile/.pub-cache/
+mobile/.pub/
+mobile/build/
+mobile/.ios/
+mobile/.android/
+mobile/*.iml
+mobile/.idea/
+mobile/.vscode/
+mobile/*.lock
+mobile/pubspec.lock
 
