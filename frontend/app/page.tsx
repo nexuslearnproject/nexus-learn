@@ -1,166 +1,277 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import axios from 'axios'
+import Link from 'next/link';
+import { LanguageProvider, useLanguage } from '@/contexts/LanguageContext';
+import { Navbar, Hero } from '@/components/layout';
+import { CourseCard, CategoryCard } from '@/components/features/courses';
+import { TestimonialCard } from '@/components/features/testimonials';
+import { Button } from '@/components/ui';
+import { 
+  GraduationCap, 
+  Calculator, 
+  Microscope, 
+  BookOpen, 
+  Globe, 
+  Map,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Mail,
+} from 'lucide-react';
 
-interface Item {
-  id: number
-  name: string
-  description: string
-  created_at: string
-  updated_at: string
-}
+function AppContent() {
+  const { t } = useLanguage();
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+  const courses = [
+    {
+      id: 1,
+      title: t('course.1.title'),
+      instructor: t('course.1.instructor'),
+      image: 'https://images.unsplash.com/photo-1565229284535-2cbbe3049123?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2RpbmclMjBwcm9ncmFtbWluZ3xlbnwxfHx8fDE3NjI4MjAyMTh8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      price: '฿2,990',
+      rating: 4.9,
+      students: 8500,
+      duration: '60 ชั่วโมง',
+      level: t('courses.level.advanced'),
+      category: 'กพ',
+    },
+    {
+      id: 2,
+      title: t('course.2.title'),
+      instructor: t('course.2.instructor'),
+      image: 'https://images.unsplash.com/photo-1742440710226-450e3b85c100?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZXNpZ24lMjBjcmVhdGl2ZSUyMHdvcmtzcGFjZXxlbnwxfHx8fDE3NjI3NDU2NTR8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      price: '฿2,990',
+      rating: 4.9,
+      students: 7200,
+      duration: '55 ชั่วโมง',
+      level: t('courses.level.advanced'),
+      category: 'กพ',
+    },
+    {
+      id: 3,
+      title: t('course.3.title'),
+      instructor: t('course.3.instructor'),
+      image: 'https://images.unsplash.com/photo-1709715357520-5e1047a2b691?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMG1lZXRpbmd8ZW58MXx8fHwxNzYyNzQwNzA3fDA&ixlib=rb-4.1.0&q=80&w=1080',
+      price: '฿1,990',
+      rating: 4.8,
+      students: 12500,
+      duration: '45 ชั่วโมง',
+      level: t('courses.level.intermediate'),
+      category: 'คณิตศาสตร์',
+    },
+    {
+      id: 4,
+      title: t('course.4.title'),
+      instructor: t('course.4.instructor'),
+      image: 'https://images.unsplash.com/photo-1666875753105-c63a6f3bdc86?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXRhJTIwc2NpZW5jZSUyMGFuYWx5dGljc3xlbnwxfHx8fDE3NjI3MTQ5MDJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+      price: '฿1,990',
+      rating: 4.8,
+      students: 10800,
+      duration: '50 ชั่วโมง',
+      level: t('courses.level.intermediate'),
+      category: 'วิทยาศาสตร์',
+    },
+  ];
 
-export default function Home() {
-  const [items, setItems] = useState<Item[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [healthStatus, setHealthStatus] = useState<string>('checking')
-  const [newItem, setNewItem] = useState({ name: '', description: '' })
+  const categories = [
+    { title: t('category.civil'), courses: 245, icon: GraduationCap, color: 'bg-blue-600' },
+    { title: t('category.math'), courses: 189, icon: Calculator, color: 'bg-purple-600' },
+    { title: t('category.science'), courses: 167, icon: Microscope, color: 'bg-green-600' },
+    { title: t('category.thai'), courses: 134, icon: BookOpen, color: 'bg-orange-600' },
+    { title: t('category.english'), courses: 156, icon: Globe, color: 'bg-pink-600' },
+    { title: t('category.social'), courses: 98, icon: Map, color: 'bg-indigo-600' },
+  ];
 
-  useEffect(() => {
-    checkHealth()
-    fetchItems()
-  }, [])
-
-  const checkHealth = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/api/health/`)
-      setHealthStatus(response.data.status === 'ok' ? 'healthy' : 'unhealthy')
-    } catch (err) {
-      setHealthStatus('unhealthy')
-    }
-  }
-
-  const fetchItems = async () => {
-    try {
-      setLoading(true)
-      const response = await axios.get(`${API_URL}/api/items/`)
-      setItems(response.data.results || response.data)
-      setError(null)
-    } catch (err) {
-      setError('Failed to fetch items. Make sure the backend is running.')
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    try {
-      await axios.post(`${API_URL}/api/items/`, newItem)
-      setNewItem({ name: '', description: '' })
-      fetchItems()
-    } catch (err) {
-      setError('Failed to create item')
-      console.error(err)
-    }
-  }
-
-  const handleDelete = async (id: number) => {
-    try {
-      await axios.delete(`${API_URL}/api/items/${id}/`)
-      fetchItems()
-    } catch (err) {
-      setError('Failed to delete item')
-      console.error(err)
-    }
-  }
+  const testimonials = [
+    {
+      name: t('testimonial.1.name'),
+      role: t('testimonial.1.role'),
+      content: t('testimonial.1.content'),
+      rating: 5,
+      initials: 'AM',
+    },
+    {
+      name: t('testimonial.2.name'),
+      role: t('testimonial.2.role'),
+      content: t('testimonial.2.content'),
+      rating: 5,
+      initials: 'RK',
+    },
+    {
+      name: t('testimonial.3.name'),
+      role: t('testimonial.3.role'),
+      content: t('testimonial.3.content'),
+      rating: 5,
+      initials: 'DT',
+    },
+  ];
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ marginBottom: '1rem' }}>Nexus Learn</h1>
+    <div className="min-h-screen bg-white">
+      <Navbar />
+      <Hero />
       
-      <div style={{ marginBottom: '2rem', padding: '1rem', background: '#f0f0f0', borderRadius: '8px' }}>
-        <h2>Backend Status</h2>
-        <p>
-          Status: <strong>{healthStatus}</strong>
-        </p>
-        <p>
-          API URL: <code>{API_URL}</code>
-        </p>
-      </div>
-
-      <div style={{ marginBottom: '2rem' }}>
-        <h2>Add New Item</h2>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '400px' }}>
-          <input
-            type="text"
-            placeholder="Item name"
-            value={newItem.name}
-            onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-            required
-            style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-          />
-          <textarea
-            placeholder="Description"
-            value={newItem.description}
-            onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-            style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', minHeight: '100px' }}
-          />
-          <button
-            type="submit"
-            style={{ padding: '0.5rem 1rem', background: '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-          >
-            Add Item
-          </button>
-        </form>
-      </div>
-
-      <div>
-        <h2>Items</h2>
-        {error && (
-          <div style={{ padding: '1rem', background: '#ffebee', color: '#c62828', borderRadius: '4px', marginBottom: '1rem' }}>
-            {error}
+      {/* Featured Courses */}
+      <section id="courses" className="py-16 md:py-24 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl mb-4 font-bold">
+              {t('courses.title')}
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {t('courses.description')}
+            </p>
           </div>
-        )}
-        {loading ? (
-          <p>Loading...</p>
-        ) : items.length === 0 ? (
-          <p>No items found. Create one above!</p>
-        ) : (
-          <div style={{ display: 'grid', gap: '1rem' }}>
-            {items.map((item) => (
-              <div
-                key={item.id}
-                style={{
-                  padding: '1rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  background: 'white',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <div>
-                    <h3 style={{ marginBottom: '0.5rem' }}>{item.name}</h3>
-                    <p style={{ color: '#666', marginBottom: '0.5rem' }}>{item.description}</p>
-                    <small style={{ color: '#999' }}>
-                      Created: {new Date(item.created_at).toLocaleString()}
-                    </small>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    style={{
-                      padding: '0.25rem 0.5rem',
-                      background: '#f44336',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {courses.map((course) => (
+              <CourseCard key={course.id} {...course} />
             ))}
           </div>
-        )}
-      </div>
-    </main>
-  )
+          <div className="text-center">
+            <Link href="/courses">
+              <Button size="lg" variant="outline">
+                {t('courses.viewAll')}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section id="categories" className="py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl mb-4 font-bold">
+              {t('categories.title')}
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              {t('categories.description')}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+            {categories.map((category) => (
+              <CategoryCard key={category.title} {...category} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-16 md:py-24 bg-blue-600 text-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl mb-4 font-bold">
+              {t('testimonials.title')}
+            </h2>
+            <p className="text-lg text-blue-100 max-w-2xl mx-auto">
+              {t('testimonials.description')}
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {testimonials.map((testimonial) => (
+              <TestimonialCard key={testimonial.name} {...testimonial} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 md:py-24 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl mb-4 font-bold">
+            {t('cta.title')}
+          </h2>
+          <p className="text-lg text-blue-100 max-w-2xl mx-auto mb-8">
+            {t('cta.description')}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/courses">
+              <Button size="lg" variant="secondary">
+                {t('cta.browseCourses')}
+              </Button>
+            </Link>
+            <Link href="/#contact">
+              <Button size="lg" variant="outline" className="bg-transparent text-white border-white hover:bg-white hover:text-blue-600">
+                {t('cta.becomeInstructor')}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer id="contact" className="bg-gray-900 text-gray-300 py-12 md:py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4 text-white">
+                <span className="text-xl font-semibold">Nexus Learn</span>
+              </div>
+              <p className="text-sm mb-4">
+                {t('footer.description')}
+              </p>
+              <div className="flex gap-3">
+                <a href="#" className="hover:text-white transition-colors">
+                  <Facebook className="h-5 w-5" />
+                </a>
+                <a href="#" className="hover:text-white transition-colors">
+                  <Twitter className="h-5 w-5" />
+                </a>
+                <a href="#" className="hover:text-white transition-colors">
+                  <Instagram className="h-5 w-5" />
+                </a>
+                <a href="#" className="hover:text-white transition-colors">
+                  <Linkedin className="h-5 w-5" />
+                </a>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-white mb-4 font-semibold">{t('footer.quickLinks')}</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:text-white transition-colors">{t('footer.aboutUs')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('footer.careers')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('footer.blog')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('footer.contact')}</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-white mb-4 font-semibold">{t('footer.support')}</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="hover:text-white transition-colors">{t('footer.helpCenter')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('footer.terms')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('footer.privacy')}</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">{t('footer.accessibility')}</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-white mb-4 font-semibold">{t('footer.newsletter')}</h3>
+              <p className="text-sm mb-4">{t('footer.newsletterDescription')}</p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder={t('footer.emailPlaceholder')}
+                  className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-white placeholder-gray-400"
+                />
+                <Button size="sm">
+                  <Mail className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 pt-8 text-center text-sm">
+            <p>{t('footer.copyright')}</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 }
 
+export default function HomePage() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
+}

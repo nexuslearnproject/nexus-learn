@@ -1,0 +1,25 @@
+{
+  "name": "@nexus-learn/design-tokens",
+  "version": "1.0.0",
+  "description": "Shared design tokens for Nexus Learn (Next.js & Flutter)",
+  "private": true,
+  "scripts": {
+    "generate": "npm run generate:css && npm run generate:dart && npm run generate:ts",
+    "generate:css": "node generators/css-generator.js",
+    "generate:dart": "node generators/dart-generator.js",
+    "generate:ts": "node generators/ts-generator.js",
+    "watch": "nodemon --watch tokens.json --exec 'npm run generate'",
+    "validate": "node -e \"JSON.parse(require('fs').readFileSync('tokens.json', 'utf8'))\" && echo '✅ tokens.json is valid JSON'"
+  },
+  "keywords": [
+    "design-tokens",
+    "design-system",
+    "theming"
+  ],
+  "author": "Nexus Learn Team",
+  "license": "MIT",
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
+

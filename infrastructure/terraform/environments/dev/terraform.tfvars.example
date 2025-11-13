@@ -1,0 +1,48 @@
+# Copy this file to terraform.tfvars and configure with your values
+# Rename: cp terraform.tfvars.example terraform.tfvars
+# IMPORTANT: Add terraform.tfvars to .gitignore (already done)
+#
+# COST-OPTIMIZED CONFIGURATION FOR DEV ENVIRONMENT
+# This configuration minimizes costs by:
+# - Using single AZ (reduces NAT Gateway costs by 50%)
+# - Using minimum ECS resources (256 CPU, 512 MB memory)
+# - Using Free Tier eligible RDS instance (db.t3.micro)
+# - Disabling expensive features (Container Insights, Performance Insights)
+# - Minimal backup retention (1 day)
+# - Minimal log retention (1 day)
+
+project_name = "nexus-learn"
+aws_region   = "ap-southeast-1"
+
+# Backend Docker image (after pushing to ECR)
+backend_image = "123456789012.dkr.ecr.ap-southeast-1.amazonaws.com/nexus-backend:latest"
+
+# Backend scaling configuration (Cost-optimized: minimum resources)
+backend_cpu          = 256   # 0.25 vCPU (minimum, Free Tier friendly)
+backend_memory       = 512    # 512 MB (minimum)
+backend_desired_count = 1    # Single instance
+backend_min_count    = 1     # No scale-down below 1
+backend_max_count    = 2     # Minimal auto-scaling (only scales to 2 if needed)
+
+# Database configuration (Free Tier eligible)
+database_name     = "nexus_db"
+database_username = "nexus_user"
+rds_instance_class = "db.t3.micro"  # Free Tier eligible (750 hours/month)
+
+# RDS Storage Configuration (Cost-optimized)
+rds_allocated_storage = 20           # 20 GB minimum (Free Tier covers 20GB)
+rds_max_allocated_storage = 20       # Disable storage auto-scaling
+rds_backup_retention_period = 1      # Minimal backup retention (1 day)
+rds_performance_insights_enabled = false  # Disable expensive feature
+
+# ECS Monitoring Configuration (Cost-optimized)
+enable_container_insights = false    # Disable Container Insights (saves ~$10/month)
+log_retention_days = 1                # Minimal log retention (1 day)
+
+# SSL Certificate ARN (optional - leave empty for HTTP only)
+certificate_arn = ""
+
+# CloudFront (disabled for dev to save costs)
+enable_cloudfront = false
+cloudfront_certificate_arn = ""
+

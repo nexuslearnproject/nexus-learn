@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import './globals.css'
+import '@/styles/globals.css'
 
 export const metadata: Metadata = {
-  title: 'Nexus Learn',
-  description: 'Full-stack application with Django and Next.js',
+  title: 'Nexus Learn - Modern Learning Platform',
+  description: 'Learn, Build, and Grow with Nexus Learn. A modern learning platform built with Next.js, Django, and AWS.',
 }
 
 export default function RootLayout({

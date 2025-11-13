@@ -1,0 +1,29 @@
+# Copy this file to terraform.tfvars and configure with your values
+# Rename: cp terraform.tfvars.example terraform.tfvars
+# IMPORTANT: Add terraform.tfvars to .gitignore (already done)
+
+project_name = "nexus-learn"
+aws_region   = "us-east-1"
+
+# Backend Docker image (after pushing to ECR)
+backend_image = "123456789012.dkr.ecr.us-east-1.amazonaws.com/nexus-backend:latest"
+
+# Backend scaling configuration
+backend_cpu          = 512
+backend_memory       = 1024
+backend_desired_count = 1
+backend_min_count    = 1
+backend_max_count    = 5
+
+# Database configuration
+database_name     = "nexus_db"
+database_username = "nexus_user"
+rds_instance_class = "db.t3.micro"
+
+# SSL Certificate ARN (optional - leave empty for HTTP only)
+certificate_arn = ""
+
+# CloudFront (optional)
+enable_cloudfront = false
+cloudfront_certificate_arn = ""
+

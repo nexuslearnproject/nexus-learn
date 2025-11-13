@@ -62,8 +62,46 @@ services:
     networks:
       - nexus_network
 
+  # Terraform Service for Infrastructure Management
+  terraform:
+    image: hashicorp/terraform:latest
+    container_name: nexus_terraform
+    working_dir: /terraform
+    volumes:
+      - ./infrastructure/terraform:/terraform
+      - terraform_cache:/root/.terraform.d
+      - terraform_plugins:/root/.terraform.d/plugins
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-ap-southeast-1}
+      - AWS_REGION=${AWS_REGION:-ap-southeast-1}
+      - TF_LOG=${TF_LOG:-}
+      - TF_LOG_PATH=${TF_LOG_PATH:-/terraform/terraform.log}
+    networks:
+      - nexus_network
+    profiles:
+      - infrastructure
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Terraform Infrastructure Management"
+        echo "Usage examples:"
+        echo "  docker-compose run --rm terraform terraform -chdir=environments/dev init"
+        echo "  docker-compose run --rm terraform terraform -chdir=environments/dev plan"
+        echo "  docker-compose run --rm terraform terraform -chdir=environments/dev apply"
+        echo ""
+        echo "Available environments: dev, staging, prod"
+        echo ""
+        tail -f /dev/null
+
 volumes:
   postgres_data:
+  terraform_cache:
+    driver: local
+  terraform_plugins:
+    driver: local
 
 networks:
   nexus_network:
