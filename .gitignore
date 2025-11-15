@@ -49,6 +49,11 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.backup
+# Keep environment templates but ignore actual env files
+environments/.env.*
+!environments/.env.example
+!environments/README.md
 
 # IDE
 .vscode/

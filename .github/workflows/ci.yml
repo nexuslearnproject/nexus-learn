@@ -1,0 +1,162 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, dev, staging, prod]
+  push:
+    branches: [main, dev, staging, prod]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: nexus_db
+          POSTGRES_USER: nexus_user
+          POSTGRES_PASSWORD: nexus_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run migrations
+        working-directory: ./backend
+        env:
+          POSTGRES_DB: nexus_db
+          POSTGRES_USER: nexus_user
+          POSTGRES_PASSWORD: nexus_password
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          DJANGO_SETTINGS_MODULE: config.test_settings
+        run: |
+          python manage.py migrate --noinput
+
+      - name: Run tests
+        working-directory: ./backend
+        env:
+          POSTGRES_DB: nexus_db
+          POSTGRES_USER: nexus_user
+          POSTGRES_PASSWORD: nexus_password
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          DJANGO_SETTINGS_MODULE: config.test_settings
+        run: |
+          python manage.py test --noinput
+
+      - name: Lint with flake8
+        working-directory: ./backend
+        run: |
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: ./frontend
+        run: npm run lint || true
+
+      - name: Type check
+        working-directory: ./frontend
+        run: npm run type-check || true
+
+      - name: Build
+        working-directory: ./frontend
+        run: npm run build
+
+  docker-build-test:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: nexus-backend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          tags: nexus-frontend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  terraform-validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Format Check
+        working-directory: ./infrastructure/terraform
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        working-directory: ./infrastructure/terraform/environments/dev
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        working-directory: ./infrastructure/terraform/environments/dev
+        run: terraform validate
+

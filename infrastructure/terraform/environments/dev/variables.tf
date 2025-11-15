@@ -150,3 +150,157 @@ variable "log_retention_days" {
   default     = 1
 }
 
+# Neo4j Variables
+variable "neo4j_image" {
+  description = "Docker image for Neo4j"
+  type        = string
+  default     = "neo4j:5.15-community"
+}
+
+variable "neo4j_cpu" {
+  description = "CPU units for Neo4j (1024 = 1 vCPU)"
+  type        = number
+  default     = 2048
+}
+
+variable "neo4j_memory" {
+  description = "Memory for Neo4j in MB"
+  type        = number
+  default     = 4096
+}
+
+variable "neo4j_desired_count" {
+  description = "Desired number of Neo4j tasks (should be 1 for single instance)"
+  type        = number
+  default     = 1
+}
+
+variable "neo4j_password_secret_arn" {
+  description = "ARN of the Neo4j password secret in Secrets Manager (optional)"
+  type        = string
+  default     = ""
+}
+
+# Weaviate Variables
+variable "weaviate_image" {
+  description = "Docker image for Weaviate"
+  type        = string
+  default     = "semitechnologies/weaviate:1.24.0"
+}
+
+variable "weaviate_cpu" {
+  description = "CPU units for Weaviate (1024 = 1 vCPU)"
+  type        = number
+  default     = 2048
+}
+
+variable "weaviate_memory" {
+  description = "Memory for Weaviate in MB"
+  type        = number
+  default     = 4096
+}
+
+variable "weaviate_desired_count" {
+  description = "Desired number of Weaviate tasks"
+  type        = number
+  default     = 1
+}
+
+variable "weaviate_persistence_enabled" {
+  description = "Enable EFS persistence for Weaviate"
+  type        = bool
+  default     = true
+}
+
+# Redis/ElastiCache Variables
+variable "redis_node_type" {
+  description = "ElastiCache node type"
+  type        = string
+  default     = "cache.t3.micro"
+}
+
+variable "redis_num_nodes" {
+  description = "Number of Redis cache nodes"
+  type        = number
+  default     = 1
+}
+
+variable "redis_version" {
+  description = "Redis engine version"
+  type        = string
+  default     = "7.0"
+}
+
+variable "redis_automatic_failover_enabled" {
+  description = "Enable automatic failover for Redis"
+  type        = bool
+  default     = false
+}
+
+variable "redis_multi_az_enabled" {
+  description = "Enable Multi-AZ for Redis"
+  type        = bool
+  default     = false
+}
+
+variable "redis_snapshot_retention_limit" {
+  description = "Number of days to retain Redis snapshots"
+  type        = number
+  default     = 1
+}
+
+# Celery Variables
+variable "celery_cpu" {
+  description = "CPU units for Celery worker (1024 = 1 vCPU)"
+  type        = number
+  default     = 1024
+}
+
+variable "celery_memory" {
+  description = "Memory for Celery worker in MB"
+  type        = number
+  default     = 2048
+}
+
+variable "celery_desired_count" {
+  description = "Desired number of Celery workers"
+  type        = number
+  default     = 2
+}
+
+variable "celery_min_count" {
+  description = "Minimum number of Celery workers"
+  type        = number
+  default     = 1
+}
+
+variable "celery_max_count" {
+  description = "Maximum number of Celery workers"
+  type        = number
+  default     = 5
+}
+
+variable "celery_queues" {
+  description = "List of Celery queues to process"
+  type        = list(string)
+  default     = ["langgraph", "embeddings"]
+}
+
+variable "celery_concurrency" {
+  description = "Celery worker concurrency (number of concurrent tasks)"
+  type        = number
+  default     = 2
+}
+
+variable "enable_celery_beat" {
+  description = "Enable Celery Beat scheduler"
+  type        = bool
+  default     = true
+}
+
+variable "celery_environment_variables" {
+  description = "Additional environment variables for Celery workers"
+  type        = list(map(string))
+  default     = []
+}
+

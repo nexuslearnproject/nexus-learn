@@ -118,8 +118,8 @@ class AppBorderRadius {
   static const md = BorderRadius.all(Radius.circular(6.0));
   static const lg = BorderRadius.all(Radius.circular(8.0));
   static const xl = BorderRadius.all(Radius.circular(12.0));
-  static const 2xl = BorderRadius.all(Radius.circular(16.0));
-  static const 3xl = BorderRadius.all(Radius.circular(24.0));
+  static const xl2 = BorderRadius.all(Radius.circular(16.0));
+  static const xl3 = BorderRadius.all(Radius.circular(24.0));
   static const full = BorderRadius.all(Radius.circular(9999));
 
   // Circular radius values
@@ -128,8 +128,8 @@ class AppBorderRadius {
   static const circularMd = 6.0;
   static const circularLg = 8.0;
   static const circularXl = 12.0;
-  static const circular2xl = 16.0;
-  static const circular3xl = 24.0;
+  static const circularXl2 = 16.0;
+  static const circularXl3 = 24.0;
 }
 
 /// Design system shadows

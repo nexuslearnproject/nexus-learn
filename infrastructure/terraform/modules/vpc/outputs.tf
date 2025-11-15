@@ -38,3 +38,28 @@ output "nat_gateway_ids" {
   value       = aws_nat_gateway.main[*].id
 }
 
+output "neo4j_security_group_id" {
+  description = "ID of the Neo4j security group"
+  value       = aws_security_group.neo4j.id
+}
+
+output "weaviate_security_group_id" {
+  description = "ID of the Weaviate security group"
+  value       = aws_security_group.weaviate.id
+}
+
+output "service_discovery_namespace_id" {
+  description = "ID of the service discovery namespace"
+  value       = aws_service_discovery_private_dns_namespace.main.id
+}
+
+output "redis_security_group_id" {
+  description = "ID of the Redis security group"
+  value       = aws_security_group.redis.id
+}
+
+output "celery_security_group_id" {
+  description = "ID of the Celery security group"
+  value       = aws_security_group.celery.id
+}
+

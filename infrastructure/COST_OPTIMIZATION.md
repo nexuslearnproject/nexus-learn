@@ -5,10 +5,10 @@ This document outlines the cost-optimized architecture changes made to minimize 
 ## Architecture Changes
 
 ### 1. Single Availability Zone (AZ)
-**Before:** 2 AZs (ap-southeast-1a, ap-southeast-1b)  
+**Before:** 2 AZs (ap-southeast-1a, ap-southst-1b)  
 **After:** 1 AZ (ap-southeast-1a)
 
-**Cost Impact:**
+**Cost Impact:**ea
 - Reduces NAT Gateway costs by 50% (~$32/month savings)
 - Reduces subnet and routing complexity
 - Still maintains high availability for dev workloads
@@ -198,8 +198,8 @@ The optimized architecture:
 - ✅ Reduces costs by 70-80%
 - ✅ Uses Free Tier eligible resources
 - ✅ Maintains functionality for dev workloads
-- ✅ Scales with actual usage
-- ✅ Easy to scale up when needed
+- ✅ Scales wscale up when neededith actual usage
+- ✅ Easy to 
 
 **Estimated Monthly Cost: $20-30 (Free Tier) or $80-90 (after Free Tier)**
 

@@ -246,3 +246,156 @@ resource "aws_security_group" "rds" {
   }
 }
 
+# Security Group for Neo4j
+resource "aws_security_group" "neo4j" {
+  name        = "${var.project_name}-neo4j-sg"
+  description = "Security group for Neo4j"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description     = "Neo4j HTTP from ECS"
+    from_port       = 7474
+    to_port         = 7474
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs.id]
+  }
+
+  ingress {
+    description     = "Neo4j Bolt from ECS"
+    from_port       = 7687
+    to_port         = 7687
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "${var.project_name}-neo4j-sg"
+    Environment = var.environment
+  }
+}
+
+# Security Group for Weaviate
+resource "aws_security_group" "weaviate" {
+  name        = "${var.project_name}-weaviate-sg"
+  description = "Security group for Weaviate"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description     = "Weaviate HTTP from ECS"
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs.id]
+  }
+
+  ingress {
+    description     = "Weaviate gRPC from ECS"
+    from_port       = 50051
+    to_port         = 50051
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs.id]
+  }
+
+  # Allow EFS access for persistence
+  ingress {
+    description     = "EFS from ECS"
+    from_port       = 2049
+    to_port         = 2049
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "${var.project_name}-weaviate-sg"
+    Environment = var.environment
+  }
+}
+
+# Service Discovery Private DNS Namespace
+resource "aws_service_discovery_private_dns_namespace" "main" {
+  name        = "${var.project_name}.local"
+  description = "Private DNS namespace for service discovery"
+  vpc         = aws_vpc.main.id
+
+  tags = {
+    Name        = "${var.project_name}-service-discovery"
+    Environment = var.environment
+  }
+}
+
+# Security Group for Redis (ElastiCache)
+resource "aws_security_group" "redis" {
+  name        = "${var.project_name}-redis-sg"
+  description = "Security group for ElastiCache Redis"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description     = "Redis from ECS"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ecs.id]
+  }
+
+  ingress {
+    description     = "Redis from Celery workers"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
+    security_groups = [aws_security_group.celery.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "${var.project_name}-redis-sg"
+    Environment = var.environment
+  }
+}
+
+# Security Group for Celery Workers
+resource "aws_security_group" "celery" {
+  name        = "${var.project_name}-celery-sg"
+  description = "Security group for Celery workers"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description     = "Allow internal communication from ECS"
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    security_groups = [aws_security_group.ecs.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "${var.project_name}-celery-sg"
+    Environment = var.environment
+  }
+}
+

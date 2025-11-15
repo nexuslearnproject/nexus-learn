@@ -19,6 +19,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-this-in-production')
 
+# Custom User Model
+AUTH_USER_MODEL = 'api.User'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
@@ -140,4 +143,50 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
+# Neo4j Configuration
+NEO4J_URI = os.getenv('NEO4J_URI', 'bolt://neo4j:7687')
+NEO4J_USER = os.getenv('NEO4J_USER', 'neo4j')
+NEO4J_PASSWORD = os.getenv('NEO4J_PASSWORD', 'neo4j_password')
+
+# Vector Store Configuration
+EMBEDDING_MODEL = os.getenv('EMBEDDING_MODEL', 'all-MiniLM-L6-v2')
+EMBEDDING_DIMENSIONS = int(os.getenv('EMBEDDING_DIMENSIONS', '384'))
+
+# Weaviate Configuration
+WEAVIATE_URL = os.getenv('WEAVIATE_URL', 'http://weaviate:8080')
+WEAVIATE_API_KEY = os.getenv('WEAVIATE_API_KEY', '')
+
+# LangGraph Configuration
+LANGGRAPH_LLM_PROVIDER = os.getenv('LANGGRAPH_LLM_PROVIDER', 'openai')  # openai or anthropic
+LANGGRAPH_LLM_MODEL = os.getenv('LANGGRAPH_LLM_MODEL', 'gpt-4o-mini')  # Model name
+LANGGRAPH_DEBUG = os.getenv('LANGGRAPH_DEBUG', 'False').lower() == 'true'  # Enable graph visualization
+LANGGRAPH_PERSIST = os.getenv('LANGGRAPH_PERSIST', 'False').lower() == 'true'  # Enable state persistence
+LANGGRAPH_DEFAULT_ENABLED = os.getenv('LANGGRAPH_DEFAULT_ENABLED', 'False').lower() == 'true'  # Use LangGraph by default
+
+# LLM API Keys
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
+
+# Celery Configuration
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://redis:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', 'redis://redis:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 300  # 5 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = 240  # 4 minutes
+CELERY_RESULT_EXPIRES = 3600  # 1 hour
+
+# Task routing
+CELERY_TASK_ROUTES = {
+    'api.tasks.langgraph.*': {'queue': 'langgraph'},
+    'api.tasks.embeddings.*': {'queue': 'embeddings'},
+}
+
+# Test Configuration
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+TEST_DATABASE_NAME = os.getenv('TEST_DATABASE_NAME', 'test_nexus_db')
 

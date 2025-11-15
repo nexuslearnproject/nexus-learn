@@ -1,0 +1,131 @@
+name: Deploy to Dev
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-southeast-1
+  ENVIRONMENT: dev
+  ECR_BACKEND_REPO: nexus-backend-dev
+  ECR_FRONTEND_REPO: nexus-frontend-dev
+  ECS_CLUSTER: nexus-learn-cluster
+  ECS_BACKEND_SERVICE: nexus-learn-backend-service
+  ECS_FRONTEND_SERVICE: nexus-learn-frontend-service
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_BACKEND_REPO }}:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_BACKEND_REPO }}:${{ github.sha }}
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_BACKEND_REPO }}:dev-${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_FRONTEND_REPO }}:latest
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_FRONTEND_REPO }}:${{ github.sha }}
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_FRONTEND_REPO }}:dev-${{ github.ref_name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-backend:
+    name: Deploy Backend to ECS
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to ECS
+        run: |
+          ./infrastructure/scripts/deploy-ecs.sh \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_BACKEND_SERVICE }} \
+            --image ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_BACKEND_REPO }}:${{ github.sha }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Run migrations
+        run: |
+          ./infrastructure/scripts/run-migrations.sh \
+            --environment ${{ env.ENVIRONMENT }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Health check
+        run: |
+          ./infrastructure/scripts/health-check.sh \
+            --environment ${{ env.ENVIRONMENT }} \
+            --region ${{ env.AWS_REGION }}
+
+  deploy-frontend:
+    name: Deploy Frontend to ECS
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to ECS
+        run: |
+          ./infrastructure/scripts/deploy-ecs.sh \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_FRONTEND_SERVICE }} \
+            --image ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_FRONTEND_REPO }}:${{ github.sha }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Health check
+        run: |
+          ./infrastructure/scripts/health-check.sh \
+            --environment ${{ env.ENVIRONMENT }} \
+            --region ${{ env.AWS_REGION }}
+
