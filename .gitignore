@@ -50,6 +50,10 @@ build/
 .env.test.local
 .env.production.local
 .env.*.backup
+.env.backup.*
+.env.bak
+.env.backup
+*.backup
 # Keep environment templates but ignore actual env files
 environments/.env.*
 !environments/.env.example
